@@ -3,6 +3,7 @@ Database models.
 """
 
 from django.db import models
+from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import (
     AbstractBaseUser,
@@ -45,7 +46,7 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    """User in the system."""
+    """User model."""
 
     username = models.CharField(max_length=25, unique=True)
     tier = models.ForeignKey(
@@ -77,10 +78,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class Tier(models.Model):
-    """Tier in the system."""
+    """Tier model."""
 
     name = models.CharField(max_length=25, unique=True)
-    thumbnail = models.BooleanField(default=True)
+    thumbnails = models.BooleanField(default=True)
     original_size = models.BooleanField(default=False)
     expiring_link = models.BooleanField(default=False)
 
@@ -90,6 +91,27 @@ class Tier(models.Model):
     def clean(self):
         if not self.name:
             raise ValidationError("Tier must have a name.")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
+
+
+class ThumbnailSize(models.Model):
+    """Thumbnail size model."""
+
+    tier = models.ForeignKey("Tier", on_delete=models.CASCADE)
+    height = models.PositiveIntegerField(validators=[MinValueValidator(1)])
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["tier", "height"], name="unique_tier_height"
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.tier} - height: {self.height}px"
 
     def save(self, *args, **kwargs):
         self.full_clean()

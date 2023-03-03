@@ -6,12 +6,13 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 
-from core.models import Tier
+from core.models import Tier, ThumbnailSize
 
 
 class ModelTests(TestCase):
     """Test models."""
 
+    # Tests for tier model
     def test_create_tier_with_name_successfull(self):
         """Test creating a tier with a name is successful."""
 
@@ -26,6 +27,7 @@ class ModelTests(TestCase):
         with self.assertRaises(ValidationError):
             Tier.objects.create(name="")
 
+    # Tests for user model
     def test_create_user_with_username_successful(self):
         """Test creating a user with a username is successful."""
 
@@ -56,3 +58,48 @@ class ModelTests(TestCase):
 
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
+
+    # Tests for thumbnail size model
+    def test_create_thumbnail_size_successfull(self):
+        """Test creating a thumbnail size is successful."""
+
+        height = 200
+        tier = Tier.objects.create(name="test")
+        thumb = ThumbnailSize.objects.create(tier=tier, height=height)
+
+        self.assertEqual(thumb.tier, tier)
+        self.assertEqual(thumb.height, height)
+
+    def test_create_two_thumbnail_sizes_for_one_tier(self):
+        """Test creating 2 thumbnail sizes for 1 tier."""
+
+        height_1 = 200
+        height_2 = 300
+        tier = Tier.objects.create(name="test")
+        thumb_1 = ThumbnailSize.objects.create(tier=tier, height=height_1)
+        thumb_2 = ThumbnailSize.objects.create(tier=tier, height=height_2)
+
+        self.assertEqual(thumb_1.tier, tier)
+        self.assertEqual(thumb_2.tier, tier)
+        self.assertEqual(thumb_1.height, height_1)
+        self.assertEqual(thumb_2.height, height_2)
+
+    def test_create_two_identical_thumbnail_sizes_for_one_tier(self):
+        """Test creating 2 identical thumbnail sizes for 1 tier raises error."""
+
+        with self.assertRaises(ValidationError):
+            height = 200
+            tier = Tier.objects.create(name="test")
+            ThumbnailSize.objects.create(tier=tier, height=height)
+            ThumbnailSize.objects.create(tier=tier, height=height)
+
+        self.assertEqual(ThumbnailSize.objects.count(), 1)
+
+    def test_create_thumbnail_with_0_height_raises_error(self):
+        """Test creating a thumbnail size with 0 height raises ValidationError."""
+
+        with self.assertRaises(ValidationError):
+            ThumbnailSize.objects.create(
+                tier=Tier.objects.create(name="test"),
+                height=0,
+            )

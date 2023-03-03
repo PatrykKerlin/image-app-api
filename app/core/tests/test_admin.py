@@ -8,7 +8,7 @@ from django.urls import reverse
 
 from rest_framework import status
 
-from core.models import Tier
+from core.models import Tier, ThumbnailSize
 
 
 class AdminSiteTests(TestCase):
@@ -24,12 +24,14 @@ class AdminSiteTests(TestCase):
         )
         self.client.force_login(self.superuser)
         self.tier = Tier.objects.create(name="test")
+        self.thumb = ThumbnailSize.objects.create(tier=self.tier, height=200)
         self.user = get_user_model().objects.create_user(
             username="user",
             password="test1234",
             tier=self.tier,
         )
 
+    # Users page
     def test_users_list(self):
         """Test that users are listed on page."""
 
@@ -54,6 +56,7 @@ class AdminSiteTests(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    # Tiers page
     def test_tiers_list(self):
         """Test that tiers are listed on page."""
 
@@ -74,6 +77,31 @@ class AdminSiteTests(TestCase):
         """Test the create tier page works."""
 
         url = reverse("admin:core_tier_add")
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    # Thumbnail sizes page
+    def test_thumbnail_sizes_list(self):
+        """Test that thumbnail sizes are listed on page."""
+
+        url = reverse("admin:core_thumbnailsize_changelist")
+        response = self.client.get(url)
+
+        self.assertContains(response, self.thumb.height)
+
+    def test_edit_thumbnail_sizes_page(self):
+        """Test the edit thumbnail sizes page works."""
+
+        url = reverse("admin:core_thumbnailsize_change", args=[self.thumb.id])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_create_thumbnail_size_page(self):
+        """Test the create thumbnail size page works."""
+
+        url = reverse("admin:core_thumbnailsize_add")
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)

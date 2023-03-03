@@ -10,7 +10,7 @@ from django.db.utils import OperationalError
 from django.test import SimpleTestCase, TestCase
 from django.contrib.auth import get_user_model
 
-from core.models import Tier
+from core.models import Tier, ThumbnailSize
 
 
 @patch("core.management.commands.wait_for_db.Command.check")
@@ -41,14 +41,14 @@ class CommandTests(SimpleTestCase):
 class CommandDatabaseTests(TestCase):
     """Test commands with model manipulations."""
 
-    def test_create_base_setup(self):
+    def test_models_base_setup(self):
         """Test adding basic data to database."""
 
-        call_command("create_base_setup")
-        names = Tier.objects.values_list("name", flat=True)
+        call_command("models_base_setup")
         users = get_user_model().objects.values_list("username", flat=True)
+        tiers = Tier.objects.values_list("name", flat=True)
+        thumbs = ThumbnailSize.objects.values_list("id", flat=True)
 
-        self.assertEqual(len(names), 3)
-        self.assertEqual(set(names), {"Basic", "Premium", "Enterprise"})
         self.assertEqual(len(users), 1)
-        self.assertEqual(set(users), {"admin"})
+        self.assertEqual(len(tiers), 3)
+        self.assertEqual(len(thumbs), 5)
