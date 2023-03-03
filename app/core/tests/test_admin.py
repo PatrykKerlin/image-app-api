@@ -8,6 +8,8 @@ from django.urls import reverse
 
 from rest_framework import status
 
+from core.models import Tier
+
 
 class AdminSiteTests(TestCase):
     """Tests for Django admin."""
@@ -21,9 +23,11 @@ class AdminSiteTests(TestCase):
             password="test1234",
         )
         self.client.force_login(self.superuser)
-        self.user = get_user_model().objects.create(
+        self.tier = Tier.objects.create(name="test")
+        self.user = get_user_model().objects.create_user(
             username="user",
             password="test1234",
+            tier=self.tier,
         )
 
     def test_users_list(self):
@@ -46,6 +50,30 @@ class AdminSiteTests(TestCase):
         """Test the create user page works."""
 
         url = reverse("admin:core_user_add")
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_tiers_list(self):
+        """Test that tiers are listed on page."""
+
+        url = reverse("admin:core_tier_changelist")
+        response = self.client.get(url)
+
+        self.assertContains(response, self.tier.name)
+
+    def test_edit_tier_page(self):
+        """Test the edit tier page works."""
+
+        url = reverse("admin:core_tier_change", args=[self.tier.id])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_create_tier_page(self):
+        """Test the create tier page works."""
+
+        url = reverse("admin:core_tier_add")
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
