@@ -133,3 +133,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Custom user model
 
 AUTH_USER_MODEL = "core.User"
+
+# Enabling the generation of API schema
+
+REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
