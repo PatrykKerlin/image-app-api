@@ -8,6 +8,7 @@ import uuid
 import datetime
 
 from django.db import models
+from django.core.validators import validate_image_file_extension
 from django.core.files import File
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
@@ -148,10 +149,12 @@ class Image(models.Model):
     """Image model."""
 
     user = models.ForeignKey("User", on_delete=models.CASCADE)
-    image = models.ImageField(upload_to=image_file_path)
+    image = models.ImageField(
+        upload_to=image_file_path, validators=[validate_image_file_extension]
+    )
 
     def __str__(self):
-        return self.filename
+        return self.image.path.split("/")[-1]
 
     def __repr__(self):
         return "full_size"
@@ -168,8 +171,10 @@ class Thumbnail(models.Model):
 
     user = models.ForeignKey("User", on_delete=models.CASCADE)
     image = models.ForeignKey("Image", on_delete=models.CASCADE)
-    size = models.ForeignKey("ThumbnailSize", on_delete=models.CASCADE)
-    thumbnail = models.ImageField(upload_to=image_file_path)
+    height = models.ForeignKey("ThumbnailSize", on_delete=models.CASCADE)
+    thumbnail = models.ImageField(
+        upload_to=image_file_path, validators=[validate_image_file_extension]
+    )
 
     def __str__(self):
         return self.thumbnail.path.split("/")[-1]
@@ -187,17 +192,24 @@ def image_filename_completion(sender, instance, created, **kwargs):
     """Automatic generation of thumbnails."""
 
     if created:
-        if ThumbnailSize.objects.filter(tier=instance.user.tier).exists():
-            heights = ThumbnailSize.objects.filter(
+        if instance.user.is_superuser or instance.user.is_staff:
+            height_list = ThumbnailSize.objects.values_list(
+                "height",
+                flat=True,
+            ).distinct()
+        elif instance.user.tier.thumbnails:
+            height_list = ThumbnailSize.objects.filter(
                 tier=instance.user.tier,
             ).values_list(
                 "height",
                 flat=True,
             )
+
+        if height_list:
             ext = instance.image.path.split(".")[-1]
             with open(instance.image.path, "rb") as file:
                 image_file = File(file)
-                for height in heights:
+                for height in height_list:
                     size = ThumbnailSize.objects.get(
                         tier=instance.user.tier,
                         height=height,
@@ -210,5 +222,7 @@ def image_filename_completion(sender, instance, created, **kwargs):
                     resized_img = img.resize((width, height))
                     temp_file = io.BytesIO()
                     resized_img.save(temp_file, format=format)
-                    thumbnail = Thumbnail(user=instance.user, size=size, image=instance)
+                    thumbnail = Thumbnail(
+                        user=instance.user, height=size, image=instance
+                    )
                     thumbnail.thumbnail.save(f"temp_filename.{ext}", File(temp_file))

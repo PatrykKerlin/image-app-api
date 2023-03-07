@@ -1,34 +1,36 @@
-from django.http import Http404
 import time
 import base64
 from binascii import Error
 
+from django.shortcuts import redirect
+from django.http import Http404
 
-class ExpireLinkMiddleware:
+
+class ExpiringLinkMiddleware:
+    """Middleware for handling expiring links."""
+
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-        if not self.is_valid_link(request):
+        if request.GET.get("exp") == "1":
+            if link := self.decode_link(request):
+                return redirect(link)
             raise Http404("Invalid or expired link.")
 
         response = self.get_response(request)
         return response
 
-    def is_valid_link(self, request):
+    def decode_link(self, request):
+        """URL decoding method."""
         try:
             decrypted_path = base64.urlsafe_b64decode(
                 request.path[1:].encode("utf-8")
             ).decode("utf-8")
             expire_time_str = decrypted_path.split("=")[-1]
-            if expire_time_str:
-                try:
-                    expire_time = int(expire_time_str)
-                except ValueError:
-                    return False
-            if expire_time < int(time.time()):
+            expire_time = int(expire_time_str)
+            if expire_time < time.time():
                 return False
-        except (UnicodeDecodeError, Error):
-            pass
-
-        return True
+            return decrypted_path.split("?")[0]
+        except (UnicodeDecodeError, Error, ValueError):
+            return False

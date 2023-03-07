@@ -42,9 +42,9 @@ class CommandDatabaseTests(TestCase):
     """Test commands with model manipulations."""
 
     def test_models_base_setup(self):
-        """Test adding basic data to database."""
+        """Test adding basic data to the database."""
 
-        call_command("models_base_setup")
+        call_command("model_base_setup")
         users = get_user_model().objects.values_list("username", flat=True)
         tiers = Tier.objects.values_list("name", flat=True)
         thumbs = ThumbnailSize.objects.values_list("id", flat=True)

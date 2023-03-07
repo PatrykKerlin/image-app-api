@@ -5,8 +5,6 @@ Serializers for the user API view.
 from django.contrib.auth import authenticate
 from rest_framework import serializers
 
-from core.models import User
-
 
 class AuthTokenSerializer(serializers.Serializer):
     """Serializer for the user auth token."""
@@ -36,15 +34,3 @@ class AuthTokenSerializer(serializers.Serializer):
 
         attrs["user"] = user
         return attrs
-
-
-class UserSerializer(serializers.ModelSerializer):
-    """Serializer for users."""
-
-    class Meta:
-        model = User
-        fields = [
-            "id",
-            "username",
-        ]
-        read_only_fields = ["id"]

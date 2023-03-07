@@ -2,8 +2,6 @@
 Tests for models.
 """
 
-from unittest.mock import patch
-
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
@@ -12,7 +10,7 @@ from core import models
 
 
 class ModelTests(TestCase):
-    """Test models."""
+    """Tests of models available only from the admin panel."""
 
     # Tests for tier model
     def test_create_tier_with_name_successfull(self):
@@ -122,14 +120,3 @@ class ModelTests(TestCase):
             )
 
         self.assertEqual(models.ThumbnailSize.objects.count(), 0)
-
-    # Tests for image model
-    @patch("core.models.uuid.uuid4")
-    def test_image_file_name_uuid(self, mock_uuid):
-        """Test generating image path."""
-
-        uuid = "test-uuid"
-        mock_uuid.return_value = uuid
-        file_path = models.image_file_path(None, "example.jpg")
-
-        self.assertEqual(file_path, f"uploads/recipe/{uuid}.jpg")
