@@ -160,8 +160,8 @@ class Image(models.Model):
         return "full_size"
 
     def delete(self, *args, **kwargs):
-        while Thumbnail.objects.filter(image=self).exists():
-            Thumbnail.objects.filter(image=self).first().delete()
+        for thumb in Thumbnail.objects.filter(image=self):
+            thumb.delete()
         os.remove(self.image.path)
         return super(Image, self).delete(*args, **kwargs)
 
@@ -210,7 +210,7 @@ def image_filename_completion(sender, instance, created, **kwargs):
             with open(instance.image.path, "rb") as file:
                 image_file = File(file)
                 for height in height_list:
-                    size = ThumbnailSize.objects.get(
+                    thumbnail_size_obj = ThumbnailSize.objects.get(
                         tier=instance.user.tier,
                         height=height,
                     )
@@ -222,7 +222,8 @@ def image_filename_completion(sender, instance, created, **kwargs):
                     resized_img = img.resize((width, height))
                     temp_file = io.BytesIO()
                     resized_img.save(temp_file, format=format)
+                    resized_img.seek(0)
                     thumbnail = Thumbnail(
-                        user=instance.user, height=size, image=instance
+                        user=instance.user, height=thumbnail_size_obj, image=instance
                     )
                     thumbnail.thumbnail.save(f"temp_filename.{ext}", File(temp_file))

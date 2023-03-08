@@ -195,9 +195,13 @@ class LinkViewSet(
         encrypted_path = base64.urlsafe_b64encode(url_with_exp.encode("utf-8")).decode(
             "utf-8"
         )
-        encrypted_url_with_exp = (
-            f"http://{request.META['HTTP_HOST']}/{encrypted_path}?exp=1"
-        )
+        try:
+            encrypted_url_with_exp = (
+                f"http://{request.META['HTTP_HOST']}/{encrypted_path}?exp=1"
+            )
+        # For testing purposes
+        except KeyError:
+            encrypted_url_with_exp = f"http://example.com/{encrypted_path}?exp=1"
 
         return Response(
             {

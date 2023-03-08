@@ -33,6 +33,12 @@ def thumbnail_detail_url(id):
     return reverse("image:thumbnail-detail", args=[id])
 
 
+def expiring_link_detail_url(id):
+    """Create and return an expiring link detail URL."""
+
+    return reverse("image:link-detail", args=[id])
+
+
 class PublicImageAPITests(TestCase):
     """Test unauthenticated API requests."""
 
@@ -53,8 +59,8 @@ class PublicImageAPITests(TestCase):
 
         if models.Image.objects.filter(user=self.user).exists():
             models.Image.objects.get(user=self.user).delete()
-        while models.Thumbnail.objects.filter(user=self.user).exists():
-            models.Thumbnail.objects.filter(user=self.user).first().delete()
+        for thumb in models.Thumbnail.objects.filter(user=self.user):
+            thumb.delete()
 
     def test_upload_image_unauthorized_user(self):
         """Test uploading an image by unauthorized user."""
@@ -213,3 +219,15 @@ class PrivateImageAPITests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(models.Thumbnail.objects.filter(id=thumb.id).exists())
         self.assertEqual(models.Thumbnail.objects.count(), 1)
+
+    def test_generating_expiring_link(self):
+        """Test generating."""
+
+        self.client.post(IMAGE_URL, self.payload, format="multipart")
+
+        id = models.Image.objects.get(user=self.user).id
+        url = expiring_link_detail_url(id)
+        url = f"{url}?time=500"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("url", response.data)
