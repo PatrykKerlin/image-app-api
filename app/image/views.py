@@ -169,6 +169,9 @@ class LinkViewSet(
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        return Image.objects.filter(user=self.request.user)
+
     def retrieve(self, request, *args, **kwargs):
         """A method generating expiring links."""
 

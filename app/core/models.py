@@ -123,7 +123,12 @@ class Tier(models.Model):
 class ThumbnailSize(models.Model):
     """Thumbnail size model."""
 
-    tier = models.ForeignKey("Tier", on_delete=models.CASCADE)
+    tier = models.ForeignKey(
+        "Tier",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
     height = models.PositiveIntegerField(validators=[MinValueValidator(1)])
 
     class Meta:
@@ -210,10 +215,15 @@ def image_filename_completion(sender, instance, created, **kwargs):
             with open(instance.image.path, "rb") as file:
                 image_file = File(file)
                 for height in height_list:
-                    thumbnail_size_obj = ThumbnailSize.objects.get(
-                        tier=instance.user.tier,
-                        height=height,
-                    )
+                    if instance.user.tier:
+                        thumbnail_size_obj = ThumbnailSize.objects.get(
+                            tier=instance.user.tier,
+                            height=height,
+                        )
+                    else:
+                        thumbnail_size_obj = ThumbnailSize.objects.filter(
+                            height=height,
+                        ).last()
                     img = PIL.Image.open(image_file)
                     format = img.format
                     original_width, original_height = img.size
