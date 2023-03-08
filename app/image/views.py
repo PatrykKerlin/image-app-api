@@ -209,7 +209,7 @@ class LinkViewSet(
         return Response(
             {
                 "url": encrypted_url_with_exp,
-                "expiers_in": int(request_time),
+                "expires_in": request_time_int,
             },
             status=status.HTTP_200_OK,
         )
