@@ -1,12 +1,17 @@
+
 # Image RESTful API
 
 ## API for HexOcean recruitment process.
-
-#### Authorization required!
-Token-based authentication with required prefix "Token"
-Name: Authorization
-In: header
-
+API for storing images and generating thumbnails.
+##
+### Authorization required!
+Token-based authentication with required prefix "Token"  
+Name: Authorization  
+In: header  
+##
+Full documentation available at:
+- api/docs/
+##
 ### Available endpoints:
 - **POST -> api/user/token/**
 	 - Request body:
