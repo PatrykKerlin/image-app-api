@@ -4,13 +4,20 @@
 ## API for HexOcean recruitment process.
 API for storing images and generating thumbnails.
 ##
+Django: 4.1.7  
+Django REST Framework: 3.14  
+PostgreSQL: 15.2
+##
+This app was created using Docker containers.
+To run it type "docker-compose up" in the command line.
+##
+During the first boot, there will be created an admin account and 3 tiers (Basic, Premium, Enterprise).  
+Global caching is set to 15 seconds in settings file.
+##
 ### Authorization required!
 Token-based authentication with required prefix "Token"  
 Name: Authorization  
-In: header  
-##
-Full documentation available at:
-- api/docs/
+In: header
 ##
 ### Available endpoints:
 - **POST -> api/user/token/**
