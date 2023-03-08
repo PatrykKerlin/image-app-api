@@ -221,7 +221,7 @@ class PrivateImageAPITests(TestCase):
         self.assertEqual(models.Thumbnail.objects.count(), 1)
 
     def test_generating_expiring_link(self):
-        """Test generating."""
+        """Test generating expiring links."""
 
         self.client.post(IMAGE_URL, self.payload, format="multipart")
 

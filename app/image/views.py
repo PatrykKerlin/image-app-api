@@ -63,7 +63,7 @@ class ImageViewSet(
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
-    """View for manage images."""
+    """View for managing images."""
 
     serializer_class = ImageSerializer
     queryset = Image.objects.all()
@@ -114,7 +114,7 @@ class ThumbnailViewSet(
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
-    """View for manage thumbnails."""
+    """View for managing thumbnails."""
 
     serializer_class = ThumbnailSerializer
     queryset = Thumbnail.objects.all()
@@ -162,7 +162,7 @@ class LinkViewSet(
     mixins.RetrieveModelMixin,
     viewsets.GenericViewSet,
 ):
-    """View for manage expiring_links."""
+    """View for managing expiring_links."""
 
     serializer_class = LinkSerializer
     queryset = Image.objects.all()
@@ -195,6 +195,8 @@ class LinkViewSet(
 
         exp_time = int(time.time()) + request_time_int
         url_with_exp = f"{image.image.url}?expires={exp_time}"
+        # URL encoding to hide the original path and expiration time
+        # Decoding takes place in the custom middleware
         encrypted_path = base64.urlsafe_b64encode(url_with_exp.encode("utf-8")).decode(
             "utf-8"
         )
@@ -202,7 +204,7 @@ class LinkViewSet(
             encrypted_url_with_exp = (
                 f"http://{request.META['HTTP_HOST']}/{encrypted_path}?exp=1"
             )
-        # For testing purposes
+        # Code snippet for testing purposes only
         except KeyError:
             encrypted_url_with_exp = f"http://example.com/{encrypted_path}?exp=1"
 

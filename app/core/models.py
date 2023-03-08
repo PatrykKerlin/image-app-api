@@ -196,7 +196,9 @@ class Thumbnail(models.Model):
 def image_filename_completion(sender, instance, created, **kwargs):
     """Automatic generation of thumbnails."""
 
+    # Checking that an image instance has been created
     if created:
+        # Creating a list of available heights
         if instance.user.is_superuser or instance.user.is_staff:
             height_list = ThumbnailSize.objects.values_list(
                 "height",
@@ -209,7 +211,7 @@ def image_filename_completion(sender, instance, created, **kwargs):
                 "height",
                 flat=True,
             )
-
+        # Generating thumbnails with Pillow library
         if height_list:
             ext = instance.image.path.split(".")[-1]
             with open(instance.image.path, "rb") as file:
