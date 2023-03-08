@@ -2,6 +2,11 @@
 
 ## API for HexOcean recruitment process.
 
+#### Authorization required!
+Token-based authentication with required prefix "Token"
+Name: Authorization
+In: header
+
 ### Available endpoints:
 - **POST -> api/user/token/**
 	 - Request body:
