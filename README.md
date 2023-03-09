@@ -20,8 +20,7 @@ Name: Authorization
 In: header
 ##
 ### Available endpoints:
-**Full documentation:**
-	- api/docs/
+**Full documentation:** api/docs/
 ##
 - **POST -> api/user/token/**
 	 - Request body:
